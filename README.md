@@ -191,4 +191,4 @@ analyzeWebsite('https://example.com')
 - The API server uses Puppeteer to analyze websites, which requires a headless Chrome browser.
 - For Docker deployments, the included Dockerfile sets up the necessary environment.
 - Rate limiting is not included by default. Consider adding it for production use.
-- The latest technologies are updated from this repository maintained by [@enthec](https://github.com/enthec/webappanalyzer) 
+- Both the `technologies` directory and `categories.json` are updated from the repository maintained by [@enthec, here.](https://github.com/enthec/webappanalyzer) 
