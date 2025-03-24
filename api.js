@@ -85,5 +85,5 @@ app.post('/analyze', async (req, res) => {
 
 // Start server
 app.listen(port, () => {
-  console.log(`Wappalyzer API server running on port ${port}`);
+  console.log(`INFO: Wappalyzer API server running on port ${port}`);
 }); 

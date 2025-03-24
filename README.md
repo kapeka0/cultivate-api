@@ -1,155 +1,193 @@
-# Wappalyzer
+# Cultivate API
 
-[Wappalyzer](https://www.wappalyzer.com/) indentifies technologies on websites. 
+A RESTful API for Cultivate that identifies technologies used on websites using Puppeteer to mimic browser behavior.
 
-*Note:* The [wappalyzer-core](https://www.npmjs.com/package/wappalyzer-core) package provides a low-level API without dependencies.
+> **Note:** This API is built off of the Wappalyzer technology - and serving it via an Express Server.
 
-## Command line
 
-### Installation
+## Installation
 
-```shell
-$ npm i -g wappalyzer
+```bash
+# Install dependencies
+npm install
+
+# Start the server
+npm start
+
+# Start in development mode (with auto-restart)
+npm run dev
 ```
 
-### Usage
+## API Endpoints
+
+### Health Check
 
 ```
-wappalyzer <url> [options]
+GET /health
 ```
 
-#### Options
+Returns the status of the API server.
 
-```
--b, --batch-size=...       Process links in batches
--d, --debug                Output debug messages
--t, --delay=ms             Wait for ms milliseconds between requests
--h, --help                 This text
--H, --header               Extra header to send with requests
---html-max-cols=...        Limit the number of HTML characters per line processed
---html-max-rows=...        Limit the number of HTML lines processed
--D, --max-depth=...        Don't analyse pages more than num levels deep
--m, --max-urls=...         Exit when num URLs have been analysed
--w, --max-wait=...         Wait no more than ms milliseconds for page resources to load
--p, --probe=[basic|full]   Perform a deeper scan by performing additional requests and inspecting DNS records
--P, --pretty               Pretty-print JSON output
---proxy=...                Proxy URL, e.g. 'http://user:pass@proxy:8080'
--r, --recursive            Follow links on pages (crawler)
--a, --user-agent=...       Set the user agent string
--n, --no-scripts           Disabled JavaScript on web pages
--N, --no-redirect          Disable cross-domain redirects
--e, --extended             Output additional information
---local-storage=...        JSON object to use as local storage
---session-storage=...      JSON object to use as session storage
---defer=ms                 Defer scan for ms milliseconds after page load
+#### Response
 
+```json
+{
+  "status": "OK"
+}
 ```
 
+### Analyze Website
 
-## Dependency
-
-### Installation
-
-```shell
-$ npm i wappalyzer
+```
+POST /analyze
 ```
 
-### Usage
+Analyzes a website and returns detected technologies.
 
-```javascript
-const Wappalyzer = require('wappalyzer')
+#### Request Body
 
-const url = 'https://www.wappalyzer.com'
+```json
+{
+  "url": "https://example.com",
+  "options": {
+    "debug": false,
+    "delay": 500,
+    "maxUrls": 1,
+    "maxWait": 10000,
+    "recursive": false,
+    "probe": false,
+    "userAgent": "Wappalyzer",
+    "headers": {
+      "Cookie": "example=value"
+    },
+    "localStorage": {
+      "key": "value"
+    },
+    "sessionStorage": {
+      "key": "value"
+    },
+    "htmlMaxCols": 2000,
+    "htmlMaxRows": 3000,
+    "noScripts": false,
+    "noRedirect": false
+  }
+}
+```
 
-const options = {
-  debug: false,
-  delay: 500,
-  headers: {},
-  maxDepth: 3,
-  maxUrls: 10,
-  maxWait: 5000,
-  recursive: true,
-  probe: true,
-  proxy: false,
-  userAgent: 'Wappalyzer',
-  htmlMaxCols: 2000,
-  htmlMaxRows: 2000,
-  noScripts: false,
-  noRedirect: false,
-};
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| url | String | **Required.** The URL to analyze | - |
+| options | Object | Optional configuration object | `{}` |
+| options.debug | Boolean | Enable debug mode | `false` |
+| options.delay | Number | Wait time between requests (ms) | `500` |
+| options.maxUrls | Number | Maximum number of URLs to analyze | `1` |
+| options.maxWait | Number | Maximum wait time for page resources (ms) | `10000` |
+| options.recursive | Boolean | Follow links on pages (crawler mode) | `false` |
+| options.probe | Boolean | Perform deeper scan with additional requests | `false` |
+| options.userAgent | String | Custom user agent string | `"Wappalyzer"` |
+| options.headers | Object | Custom HTTP headers | `{}` |
+| options.localStorage | Object | Local storage data | `{}` |
+| options.sessionStorage | Object | Session storage data | `{}` |
+| options.htmlMaxCols | Number | Limit HTML characters per line processed | `2000` |
+| options.htmlMaxRows | Number | Limit HTML lines processed | `3000` |
+| options.noScripts | Boolean | Disable JavaScript on web pages | `false` |
+| options.noRedirect | Boolean | Disable cross-domain redirects | `false` |
 
-const wappalyzer = new Wappalyzer(options)
+#### Response
 
-;(async function() {
-  try {
-    await wappalyzer.init()
+The response format matches the standard Wappalyzer output format:
 
-    // Optionally set additional request headers
-    const headers = {}
-
-    // Optionally set local and/or session storage
-    const storage = {
-      local: {}
-      session: {}
+```json
+{
+  "urls": {
+    "https://example.com/": {
+      "status": 200
     }
-
-    const site = await wappalyzer.open(url, headers, storage)
-
-    // Optionally capture and output errors
-    site.on('error', console.error)
-
-    const results = await site.analyze()
-
-    console.log(JSON.stringify(results, null, 2))
-  } catch (error) {
-    console.error(error)
+  },
+  "technologies": [
+    {
+      "slug": "nginx",
+      "name": "Nginx",
+      "confidence": 100,
+      "version": "1.17.3",
+      "icon": "Nginx.svg",
+      "website": "https://nginx.org/en/",
+      "cpe": "cpe:/a:nginx:nginx",
+      "categories": [
+        {
+          "id": 22,
+          "slug": "web-servers",
+          "name": "Web servers"
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "language": "en"
   }
-
-  await wappalyzer.destroy()
-})()
+}
 ```
 
-Multiple URLs can be processed in parallel:
+#### Error Response
+
+```json
+{
+  "error": "Error message",
+  "message": "Detailed error message"
+}
+```
+<!-- 
+## Docker Usage
+
+You can also run this API in a Docker container:
+
+```bash
+# Build Docker image
+docker build -t wappalyzer-api .
+
+# Run Docker container
+docker run -p 3000:3000 wappalyzer-api
+``` -->
+
+## Examples
+
+### Using cURL
+
+```bash
+curl -X POST http://localhost:3000/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com"}'
+```
+
+### Using JavaScript (Node.js)
 
 ```javascript
-const Wappalyzer = require('wappalyzer');
+const fetch = require('node-fetch');
 
-const urls = ['https://www.wappalyzer.com', 'https://www.example.com']
+async function analyzeWebsite(url) {
+  const response = await fetch('http://localhost:3000/analyze', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      url,
+      options: {
+        maxWait: 15000,
+      },
+    }),
+  });
+  
+  return response.json();
+}
 
-const wappalyzer = new Wappalyzer()
-
-;(async function() {
-  try {
-    await wappalyzer.init()
-
-    const results = await Promise.all(
-      urls.map(async (url) => {
-        const site = await wappalyzer.open(url)
-
-        const results = await site.analyze()
-
-        return { url, results }
-      })
-    )
-
-    console.log(JSON.stringify(results, null, 2))
-  } catch (error) {
-    console.error(error)
-  }
-
-  await wappalyzer.destroy()
-})()
+analyzeWebsite('https://example.com')
+  .then(data => console.log(data))
+  .catch(error => console.error(error));
 ```
 
-### Events
+## Notes
 
-Listen to events with `site.on(eventName, callback)`. Use the `page` parameter to access the Puppeteer page instance ([reference](https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#class-page)).
-
-| Event       | Parameters                     | Description                              |
-|-------------|--------------------------------|------------------------------------------|
-| `log`       | `message`, `source`            | Debug messages                           |
-| `error`     | `message`, `source`            | Error messages                           |
-| `request`   | `page`, `request`              | Emitted at the start of a request        |
-| `response`  | `page`, `request`              | Emitted upon receiving a server response |
-| `goto`      | `page`, `url`, `html`, `cookies`, `scriptsSrc`, `scripts`, `meta`, `js`, `language` `links` | Emitted after a page has been analysed |
-| `analyze`   | `urls`, `technologies`, `meta` | Emitted when the site has been analysed |
+- The API server uses Puppeteer to analyze websites, which requires a headless Chrome browser.
+- For Docker deployments, the included Dockerfile sets up the necessary environment.
+- Rate limiting is not included by default. Consider adding it for production use. 
