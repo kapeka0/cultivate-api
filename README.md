@@ -2,7 +2,7 @@
 
 A RESTful API for Cultivate that identifies technologies used on websites using Puppeteer to mimic browser behavior.
 
-> **Note:** This API is built off of the Wappalyzer technology - and serving it via an Express Server.
+> **Note:** This API is built off of the Wappalyzer technology - and serving it via an Express Server. Find the original repository [here](https://github.com/developit/wappalyzer).
 
 
 ## Installation
@@ -190,4 +190,5 @@ analyzeWebsite('https://example.com')
 
 - The API server uses Puppeteer to analyze websites, which requires a headless Chrome browser.
 - For Docker deployments, the included Dockerfile sets up the necessary environment.
-- Rate limiting is not included by default. Consider adding it for production use. 
+- Rate limiting is not included by default. Consider adding it for production use.
+- The latest technologies are updated from this repository maintained by [@enthec](https://github.com/enthec/webappanalyzer) 
