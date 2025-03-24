@@ -1,6 +1,6 @@
 # Cultivate API
 
-A RESTful API for Cultivate that identifies technologies used on websites using Puppeteer to mimic browser behavior.
+A RESTful API that identifies technologies used on websites using Puppeteer to mimic browser behavior.
 
 > **Note:** This API is built off of the Wappalyzer technology - and serving it via an Express Server. Find the original repository [here](https://github.com/developit/wappalyzer).
 
