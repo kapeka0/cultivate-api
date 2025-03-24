@@ -3,6 +3,7 @@
 const express = require('express');
 const cors = require('cors');
 const Wappalyzer = require('./driver');
+const pc = require('picocolors');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -19,6 +20,7 @@ app.get('/health', (req, res) => {
 // Main analyze endpoint
 app.post('/analyze', async (req, res) => {
   try {
+    console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Analyzing URL: ${req.body.url}`);
     const { url, options = {} } = req.body;
 
     if (!url) {
@@ -71,10 +73,10 @@ app.post('/analyze', async (req, res) => {
     
     // Clean up resources
     await wappalyzer.destroy();
-    
+    console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Analysis complete for URL: ${url}`);
     return res.json(results);
   } catch (error) {
-    console.error('Analysis error:', error);
+    console.error(pc.red(`ERROR`) + ` [${new Date().toISOString()}] (Cultivate API): Analysis error:`, error);
     
     return res.status(500).json({ 
       error: 'Analysis failed', 
@@ -85,5 +87,5 @@ app.post('/analyze', async (req, res) => {
 
 // Start server
 app.listen(port, () => {
-  console.log(`INFO: Wappalyzer API server running on port ${port}`);
+  console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Server running on port ${port}`);
 }); 
