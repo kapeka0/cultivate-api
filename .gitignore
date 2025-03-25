@@ -21,5 +21,6 @@ tags.*
 .idea
 /nbproject/private/
 src/out.json
+.cache
 
 keys.json
