@@ -174,7 +174,6 @@ app.get('/health', (req, res) => {
  */
 // Main analyze endpoint
 app.post('/analyze', async (req, res) => {
-  let browser;
   try {
     console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Analyzing URL: ${req.body.url}`);
     const { url, options = {} } = req.body;
@@ -207,7 +206,7 @@ app.post('/analyze', async (req, res) => {
       debug: options.debug || false,
       delay: options.delay || 500,
       maxUrls: options.maxUrls || 1,
-      maxWait: options.maxWait || 10000,
+      maxWait: options.maxWait || 50000,
       recursive: options.recursive || false,
       probe: options.probe || false,
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -233,16 +232,7 @@ app.post('/analyze', async (req, res) => {
     return res.json(results);
   } catch (error) {
     console.error(pc.red(`ERROR`) + ` [${new Date().toISOString()}] (Cultivate API): Analysis error:`, error);
-    
-    // // Ensure cleanup even on error
-    // if (browser) {
-    //   try {
-    //     await browser.close();
-    //   } catch (closeError) {
-    //     console.error(pc.red(`ERROR`) + ` [${new Date().toISOString()}] (Cultivate API): Error closing browser:`, closeError);
-    //   }
-    // }
-    
+        
     return res.status(500).json({ 
       error: 'Analysis failed', 
       message: error.message || String(error) 
