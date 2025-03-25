@@ -28,7 +28,7 @@
     "wappalyzer": "./cli.js"
   },
   "scripts": {
-    "start": "node api.js",
+    "start": "NODE_ENV=production node api.js",
     "dev": "NODE_ENV=development nodemon api.js"
   },
   "dependencies": {
