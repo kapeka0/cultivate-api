@@ -232,6 +232,10 @@ app.post('/analyze', async (req, res) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.status(200).json({ message: 'Welcome to the Cultivate API' });
+});
+
 // Start server
 app.listen(port, () => {
   console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Server running on port ${port}`);
