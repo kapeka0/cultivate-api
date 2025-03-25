@@ -4,19 +4,166 @@ const express = require('express');
 const cors = require('cors');
 const Wappalyzer = require('./driver');
 const pc = require('picocolors');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Swagger configuration
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Cultivate API',
+      version: '1.0.0',
+      description: 'API for analyzing technologies used on websites',
+    },
+    servers: [
+      {
+        url: `http://localhost:${port}`,
+        description: 'Development server',
+      },
+    ],
+  },
+  apis: ['./api.js'], // Path to the API docs
+};
+
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use('/swagger-ui', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Health check endpoint
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Health check endpoint
+ *     description: Returns the health status of the API
+ *     responses:
+ *       200:
+ *         description: API is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: OK
+ */
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK' });
+  console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Health check endpoint called`);
 });
 
+/**
+ * @swagger
+ * /analyze:
+ *   post:
+ *     summary: Analyze a website
+ *     description: Analyzes the technologies used on a given website URL
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - url
+ *             properties:
+ *               url:
+ *                 type: string
+ *                 description: The URL to analyze
+ *               options:
+ *                 type: object
+ *                 description: Optional configuration parameters
+ *                 required: false
+ *                 properties:
+ *                   debug:
+ *                     type: boolean
+ *                     description: Enable debug mode
+ *                     default: false
+ *                   delay:
+ *                     type: number
+ *                     description: Delay between actions in milliseconds
+ *                     default: 500
+ *                   maxUrls:
+ *                     type: number
+ *                     description: Maximum number of URLs to analyze
+ *                     default: 1
+ *                   maxWait:
+ *                     type: number
+ *                     description: Maximum time to wait for page load in milliseconds
+ *                     default: 10000
+ *                   recursive:
+ *                     type: boolean
+ *                     description: Enable recursive analysis
+ *                     default: false
+ *                   probe:
+ *                     type: boolean
+ *                     description: Enable probe mode
+ *                     default: false
+ *                   noScripts:
+ *                     type: boolean
+ *                     description: Disable JavaScript execution
+ *                     default: false
+ *                   noRedirect:
+ *                     type: boolean
+ *                     description: Disable following redirects
+ *                     default: false
+ *                   headers:
+ *                     type: object
+ *                     description: Custom headers to send with the request
+ *                     default: {}
+ *                   localStorage:
+ *                     type: object
+ *                     description: Local storage data to initialize
+ *                     default: {}
+ *                   sessionStorage:
+ *                     type: object
+ *                     description: Session storage data to initialize
+ *                     default: {}
+ *                   htmlMaxCols:
+ *                     type: number
+ *                     description: Maximum number of columns in HTML output
+ *                   htmlMaxRows:
+ *                     type: number
+ *                     description: Maximum number of rows in HTML output
+ *     responses:
+ *       200:
+ *         description: Successfully analyzed website
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               description: Analysis results containing detected technologies
+ *       400:
+ *         description: Invalid request parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "URL is required"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Analysis failed"
+ *                 message:
+ *                   type: string
+ *                   example: "Connection timeout"
+ */
 // Main analyze endpoint
 app.post('/analyze', async (req, res) => {
   try {
