@@ -29,7 +29,7 @@
   },
   "scripts": {
     "start": "node api.js",
-    "dev": "nodemon api.js"
+    "dev": "NODE_ENV=development nodemon api.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

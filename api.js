@@ -55,6 +55,14 @@ app.use(express.json());
  *                   example: OK
  */
 app.get('/health', (req, res) => {
+  // Check if server is ready to accept requests
+  if (!server.listening) {
+    return res.status(503).json({ 
+      status: 'Service Unavailable',
+      message: 'Server is starting up or shutting down'
+    });
+  }
+  
   res.status(200).json({ status: 'OK' });
   console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Health check endpoint called`);
 });
@@ -166,6 +174,7 @@ app.get('/health', (req, res) => {
  */
 // Main analyze endpoint
 app.post('/analyze', async (req, res) => {
+  let browser;
   try {
     console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Analyzing URL: ${req.body.url}`);
     const { url, options = {} } = req.body;
@@ -225,6 +234,15 @@ app.post('/analyze', async (req, res) => {
   } catch (error) {
     console.error(pc.red(`ERROR`) + ` [${new Date().toISOString()}] (Cultivate API): Analysis error:`, error);
     
+    // // Ensure cleanup even on error
+    // if (browser) {
+    //   try {
+    //     await browser.close();
+    //   } catch (closeError) {
+    //     console.error(pc.red(`ERROR`) + ` [${new Date().toISOString()}] (Cultivate API): Error closing browser:`, closeError);
+    //   }
+    // }
+    
     return res.status(500).json({ 
       error: 'Analysis failed', 
       message: error.message || String(error) 
@@ -237,6 +255,23 @@ app.get('/', (req, res) => {
 });
 
 // Start server
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Server running on port ${port}`);
+});
+
+// Handle shutdown gracefully
+process.on('SIGTERM', () => {
+  console.log(pc.yellow(`WARN`) + ` [${new Date().toISOString()}] (Cultivate API): SIGTERM received, shutting down gracefully`);
+  server.close(async () => {
+    console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Server closed`);
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log(pc.yellow(`WARN`) + ` [${new Date().toISOString()}] (Cultivate API): SIGINT received, shutting down gracefully`);
+  server.close(async () => {
+    console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Server closed`);
+    process.exit(0);
+  });
 }); 
