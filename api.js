@@ -232,7 +232,7 @@ app.post("/analyze", async (req, res) => {
           ` [${new Date().toISOString()}] (Cultivate API): Wappalyzer options:`,
         wappalyzerOptions
       );
-      console.log(req);
+      console.log("Request headers:", req.headers);
     }
     // Initialize wappalyzer
     const wappalyzer = new Wappalyzer(wappalyzerOptions);
