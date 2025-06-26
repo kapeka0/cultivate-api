@@ -242,6 +242,13 @@ app.post("/analyze", async (req, res) => {
       pc.green(`INFO`) +
         ` [${new Date().toISOString()}] (Cultivate API): Analysis complete for URL: ${url}`
     );
+    console.log(
+      pc.blue(`RESULTS`) +
+        ` [${new Date().toISOString()}] (Cultivate API): Analysis results:`,
+      results.technologies.map((tech) => ({
+        name: tech.name,
+      }))
+    );
     return res.json(results);
   } catch (error) {
     console.error(

@@ -9,8 +9,13 @@ const Wappalyzer = require("./wappalyzer");
 const { setTechnologies, setCategories, analyze, analyzeManyToMany, resolve } =
   Wappalyzer;
 
-const { CHROMIUM_BIN, CHROMIUM_DATA_DIR, CHROMIUM_WEBSOCKET, CHROMIUM_ARGS } =
-  process.env;
+const {
+  CHROMIUM_BIN,
+  CHROMIUM_DATA_DIR,
+  CHROMIUM_WEBSOCKET,
+  CHROMIUM_ARGS,
+  PUPPETEER_MAX_TIMEOUT,
+} = process.env;
 
 const chromiumArgs = CHROMIUM_ARGS
   ? CHROMIUM_ARGS.split(" ")
@@ -383,6 +388,7 @@ class Driver {
           acceptInsecureCerts: true,
           args: chromiumArgs,
           executablePath: CHROMIUM_BIN,
+          timeout: parseInt(PUPPETEER_MAX_TIMEOUT) || 120000,
         });
       }
 
