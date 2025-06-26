@@ -185,6 +185,7 @@ app.post("/analyze", async (req, res) => {
           req.body.url
         }`
     );
+
     const { url, options = {} } = req.body;
 
     if (!url) {
@@ -225,7 +226,14 @@ app.post("/analyze", async (req, res) => {
       noScripts: options.noScripts || false,
       noRedirect: options.noRedirect || false,
     };
-
+    if (wappalyzerOptions.debug) {
+      console.log(
+        pc.blue(`DEBUG`) +
+          ` [${new Date().toISOString()}] (Cultivate API): Wappalyzer options:`,
+        wappalyzerOptions
+      );
+      console.log(req);
+    }
     // Initialize wappalyzer
     const wappalyzer = new Wappalyzer(wappalyzerOptions);
 

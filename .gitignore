@@ -24,3 +24,5 @@ src/out.json
 .cache
 
 keys.json
+
+.env
