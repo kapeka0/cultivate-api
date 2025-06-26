@@ -1,36 +1,37 @@
 #!/usr/bin/env node
 
-const express = require('express');
-const cors = require('cors');
-const Wappalyzer = require('./driver');
-const pc = require('picocolors');
-const swaggerJsdoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
-
+const express = require("express");
+const cors = require("cors");
+const Wappalyzer = require("./driver");
+const pc = require("picocolors");
+const swaggerJsdoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
+require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 3000;
+console.log(`Server is running on port ${port}`);
 
 // Swagger configuration
 const swaggerOptions = {
   definition: {
-    openapi: '3.0.0',
+    openapi: "3.0.0",
     info: {
-      title: 'Cultivate API',
-      version: '1.0.0',
-      description: 'API for analyzing technologies used on websites',
+      title: "Cultivate API",
+      version: "1.0.0",
+      description: "API for analyzing technologies used on websites",
     },
     servers: [
       {
         url: `http://localhost:${port}`,
-        description: 'Development server',
+        description: "Development server",
       },
     ],
   },
-  apis: ['./api.js'], // Path to the API docs
+  apis: ["./api.js"], // Path to the API docs
 };
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
-app.use('/swagger-ui', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use("/swagger-ui", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Middleware
 app.use(cors());
@@ -54,17 +55,20 @@ app.use(express.json());
  *                   type: string
  *                   example: OK
  */
-app.get('/health', (req, res) => {
+app.get("/health", (req, res) => {
   // Check if server is ready to accept requests
   if (!server.listening) {
-    return res.status(503).json({ 
-      status: 'Service Unavailable',
-      message: 'Server is starting up or shutting down'
+    return res.status(503).json({
+      status: "Service Unavailable",
+      message: "Server is starting up or shutting down",
     });
   }
-  
-  res.status(200).json({ status: 'OK' });
-  console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Health check endpoint called`);
+
+  res.status(200).json({ status: "OK" });
+  console.log(
+    pc.green(`INFO`) +
+      ` [${new Date().toISOString()}] (Cultivate API): Health check endpoint called`
+  );
 });
 
 /**
@@ -173,28 +177,33 @@ app.get('/health', (req, res) => {
  *                   example: "Connection timeout"
  */
 // Main analyze endpoint
-app.post('/analyze', async (req, res) => {
+app.post("/analyze", async (req, res) => {
   try {
-    console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Analyzing URL: ${req.body.url}`);
+    console.log(
+      pc.green(`INFO`) +
+        ` [${new Date().toISOString()}] (Cultivate API): Analyzing URL: ${
+          req.body.url
+        }`
+    );
     const { url, options = {} } = req.body;
 
     if (!url) {
-      return res.status(400).json({ error: 'URL is required' });
+      return res.status(400).json({ error: "URL is required" });
     }
 
     try {
       const { hostname } = new URL(url);
-      
+
       if (!hostname) {
-        throw new Error('Invalid URL');
+        throw new Error("Invalid URL");
       }
     } catch (error) {
-      return res.status(400).json({ error: 'Invalid URL format' });
+      return res.status(400).json({ error: "Invalid URL format" });
     }
 
     // Extract headers from request if provided
     const headers = options.headers || {};
-    
+
     // Setup storage if provided
     const storage = {
       local: options.localStorage || {},
@@ -209,7 +218,8 @@ app.post('/analyze', async (req, res) => {
       maxWait: options.maxWait || 50000,
       recursive: options.recursive || false,
       probe: options.probe || false,
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      userAgent:
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
       htmlMaxCols: options.htmlMaxCols,
       htmlMaxRows: options.htmlMaxRows,
       noScripts: options.noScripts || false,
@@ -223,45 +233,67 @@ app.post('/analyze', async (req, res) => {
 
     // Start the analysis
     const site = await wappalyzer.open(url, headers, storage);
-    
+
     const results = await site.analyze();
-    
+
     // Clean up resources
     await wappalyzer.destroy();
-    console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Analysis complete for URL: ${url}`);
+    console.log(
+      pc.green(`INFO`) +
+        ` [${new Date().toISOString()}] (Cultivate API): Analysis complete for URL: ${url}`
+    );
     return res.json(results);
   } catch (error) {
-    console.error(pc.red(`ERROR`) + ` [${new Date().toISOString()}] (Cultivate API): Analysis error:`, error);
-        
-    return res.status(500).json({ 
-      error: 'Analysis failed', 
-      message: error.message || String(error) 
+    console.error(
+      pc.red(`ERROR`) +
+        ` [${new Date().toISOString()}] (Cultivate API): Analysis error:`,
+      error
+    );
+
+    return res.status(500).json({
+      error: "Analysis failed",
+      message: error.message || String(error),
     });
   }
 });
 
-app.get('/', (req, res) => {
-  res.status(200).json({ message: 'Welcome to the Cultivate API' });
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "Welcome to the Cultivate API" });
 });
 
 // Start server
 const server = app.listen(port, () => {
-  console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Server running on port ${port}`);
+  console.log(
+    pc.green(`INFO`) +
+      ` [${new Date().toISOString()}] (Cultivate API): Server running on port ${port}`
+  );
 });
 
 // Handle shutdown gracefully
-process.on('SIGTERM', () => {
-  console.log(pc.yellow(`WARN`) + ` [${new Date().toISOString()}] (Cultivate API): SIGTERM received, shutting down gracefully`);
+process.on("SIGTERM", () => {
+  console.log(
+    pc.yellow(`WARN`) +
+      ` [${new Date().toISOString()}] (Cultivate API): SIGTERM received, shutting down gracefully`
+  );
   server.close(async () => {
-    console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Server closed`);
+    console.log(
+      pc.green(`INFO`) +
+        ` [${new Date().toISOString()}] (Cultivate API): Server closed`
+    );
     process.exit(0);
   });
 });
 
-process.on('SIGINT', () => {
-  console.log(pc.yellow(`WARN`) + ` [${new Date().toISOString()}] (Cultivate API): SIGINT received, shutting down gracefully`);
+process.on("SIGINT", () => {
+  console.log(
+    pc.yellow(`WARN`) +
+      ` [${new Date().toISOString()}] (Cultivate API): SIGINT received, shutting down gracefully`
+  );
   server.close(async () => {
-    console.log(pc.green(`INFO`) + ` [${new Date().toISOString()}] (Cultivate API): Server closed`);
+    console.log(
+      pc.green(`INFO`) +
+        ` [${new Date().toISOString()}] (Cultivate API): Server closed`
+    );
     process.exit(0);
   });
-}); 
+});
