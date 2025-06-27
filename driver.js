@@ -444,7 +444,7 @@ class Driver {
         })
       );
 
-      await page.goto(url);
+      await page.goto(url, { waitUntil: "networkidle0" });
 
       await page.evaluate((storage) => {
         ["local", "session"].forEach((type) => {
@@ -732,7 +732,7 @@ class Site {
     });
 
     try {
-      await page.goto(url.href);
+      await page.goto(url.href, { waitUntil: "networkidle0" });
 
       if (page.url() === "about:blank") {
         const error = new Error(`The page failed to load (${url})`);
@@ -1114,9 +1114,9 @@ class Site {
     await Promise.allSettled([
       (async () => {
         try {
-          const links = ((await this.goto(url)) || []).filter(
-            ({ href }) => !this.analyzedUrls[href]
-          );
+          const links = (
+            (await this.goto(url, { waitUntil: "networkidle0" })) || []
+          ).filter(({ href }) => !this.analyzedUrls[href]);
 
           if (
             links.length &&
